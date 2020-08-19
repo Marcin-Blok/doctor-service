@@ -23,19 +23,31 @@ public class DoctorController {
     public @ResponseBody
     ResponseEntity<String> add(@RequestBody Doctor doctor) {
         String pesel = doctor.getPesel();
-        if (doctor.getName() != null && doctor.getSurname() != null && doctor.getSpecialization() != null) {
-            if (peselIsValid(pesel)) {
-                try {
-                    doctorRepository.save(doctor);
-                    return new ResponseEntity<>("Zapisano", HttpStatus.CREATED);
-                } catch (IllegalArgumentException e) {
-                    return new ResponseEntity<>("Nie udało się dodać lekarza", HttpStatus.NOT_MODIFIED);
+        if (isFilledRequiredFields(doctor)) {
+            if(pesel != null) {
+                if (peselIsValid(pesel)) {
+                    return saveDoctor(doctor);
+                } else {
+                    return new ResponseEntity<>("Nie zapisano, długość numeru pesel jest niepoprawna, bądź użyto niedozwolonych znaków lub liter", HttpStatus.NOT_ACCEPTABLE);
                 }
-            } else {
-                return new ResponseEntity<>("Nie zapisano, długość numeru pesel jest niepoprawna, bądź użyto niedozwolonych znaków lub liter", HttpStatus.NOT_ACCEPTABLE);
+            } else{
+                return saveDoctor(doctor);
             }
         } else {
             return new ResponseEntity<>("Nie zapisano, następujące pola muszą zostać wypełnione: Imię, Nazwisko, Specjalizacja", HttpStatus.NOT_ACCEPTABLE);
+        }
+    }
+
+    private boolean isFilledRequiredFields(Doctor doctor) {
+        return doctor.getName() != null && doctor.getSurname() != null && doctor.getSpecialization() != null;
+    }
+
+    private ResponseEntity<String> saveDoctor(Doctor doctor) {
+        try {
+            doctorRepository.save(doctor);
+            return new ResponseEntity<>("Zapisano", HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>("Nie udało się dodać lekarza", HttpStatus.NOT_MODIFIED);
         }
     }
 
