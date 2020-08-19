@@ -15,35 +15,36 @@ import java.util.regex.Pattern;
 @RestController
 public class DoctorController {
 
-    Pattern pattern = Pattern.compile("[0-9],{11}");
 
     @Autowired
     private DoctorRepository doctorRepository;
 
     @PostMapping(path = "/doctors")
     public @ResponseBody
-    ResponseEntity<String>add(@RequestBody Doctor doctor){
+    ResponseEntity<String> add(@RequestBody Doctor doctor) {
         String pesel = doctor.getPesel();
-        Matcher matcher = pattern.matcher(pesel);
         if (doctor.getName() != null && doctor.getSurname() != null && doctor.getSpecialization() != null) {
-            return peselValidator(doctor, matcher);
+            if (peselIsValid(pesel)) {
+                try {
+                    doctorRepository.save(doctor);
+                    return new ResponseEntity<>("Zapisano", HttpStatus.CREATED);
+                } catch (IllegalArgumentException e) {
+                    return new ResponseEntity<>("Nie udało się dodać lekarza", HttpStatus.NOT_MODIFIED);
+                }
+            } else {
+                return new ResponseEntity<>("Nie zapisano, długość numeru pesel jest niepoprawna, bądź użyto niedozwolonych znaków lub liter", HttpStatus.NOT_ACCEPTABLE);
+            }
         } else {
-            return new ResponseEntity<>("Nie zapisano, następujące pola muszą zostać wypełnione: Imię, Nazwisko, Pesel", HttpStatus.NOT_ACCEPTABLE);
+            return new ResponseEntity<>("Nie zapisano, następujące pola muszą zostać wypełnione: Imię, Nazwisko, Specjalizacja", HttpStatus.NOT_ACCEPTABLE);
         }
     }
 
-    private ResponseEntity<String> peselValidator(@RequestBody Doctor doctor, Matcher matcher) {
-        if (matcher.matches()) {
-            try {
-                doctorRepository.save(doctor);
-                return new ResponseEntity<>("Zapisano", HttpStatus.CREATED);
-            } catch (IllegalArgumentException e) {
-                return new ResponseEntity<>("Nie udało się dodać lekarza", HttpStatus.NOT_MODIFIED);
-            }
-        } else {
-            return new ResponseEntity<>("Nie zapisano, długość numeru pesel jest niepoprawna, bądź użyto niedozwolonych znaków lub liter", HttpStatus.NOT_ACCEPTABLE);
-        }
+    private boolean peselIsValid(String pesel) {
+        Pattern pattern = Pattern.compile("[0-9]{11}");
+        Matcher matcher = pattern.matcher(pesel);
+        return matcher.matches();
     }
+
 
     @GetMapping(path = "/doctors")
     public @ResponseBody
