@@ -10,7 +10,7 @@
 
 # pobranie lekarza po numerze pesel
 
-# pobranie usunięcie lekarza
+# usunięcie lekarza
 
 # dodanie specjalizacji
 
