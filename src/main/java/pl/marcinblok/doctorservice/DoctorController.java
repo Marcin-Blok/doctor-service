@@ -25,7 +25,7 @@ public class DoctorController {
     ResponseEntity<String>add(@RequestBody Doctor doctor){
         String pesel = doctor.getPesel();
         Matcher matcher = pattern.matcher(pesel);
-        if (doctor.getName() != null && doctor.getSurname() != null && doctor.getPesel() != null) {
+        if (doctor.getName() != null && doctor.getSurname() != null && doctor.getSpecialization() != null) {
             return peselValidator(doctor, matcher);
         } else {
             return new ResponseEntity<>("Nie zapisano, następujące pola muszą zostać wypełnione: Imię, Nazwisko, Pesel", HttpStatus.NOT_ACCEPTABLE);
