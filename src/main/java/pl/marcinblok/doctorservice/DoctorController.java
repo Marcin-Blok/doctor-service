@@ -15,35 +15,61 @@ import java.util.regex.Pattern;
 @RestController
 public class DoctorController {
 
-    Pattern pattern = Pattern.compile("[0-9],{11}");
 
     @Autowired
     private DoctorRepository doctorRepository;
 
     @PostMapping(path = "/doctors")
     public @ResponseBody
-    ResponseEntity<String>add(@RequestBody Doctor doctor){
-        String pesel = doctor.getPesel();
-        Matcher matcher = pattern.matcher(pesel);
-        if (doctor.getName() != null && doctor.getSurname() != null && doctor.getPesel() != null) {
-            return peselValidator(doctor, matcher);
-        } else {
-            return new ResponseEntity<>("Nie zapisano, następujące pola muszą zostać wypełnione: Imię, Nazwisko, Pesel", HttpStatus.NOT_ACCEPTABLE);
+    ResponseEntity<String> add(@RequestBody List<Doctor> doctors) {
+        for (Doctor doctor : doctors){
+            if (doctorsListValidator(doctors)) {
+                saveDoctor(doctor);
+            } else {
+                return new ResponseEntity<>("Nie zapisano", HttpStatus.NOT_MODIFIED);
+            }
+        }
+        return new ResponseEntity<>("Zapisano", HttpStatus.CREATED);
+    }
+
+    public boolean doctorsListValidator(List<Doctor> doctors) {
+        boolean result = true;
+        for (Doctor doctor : doctors) {
+            String pesel = doctor.getPesel();
+            if (isFilledRequiredFields(doctor)) {
+                if (pesel != null) {
+                    if (peselIsValid(pesel)) {
+                        result = true;
+                    } else {
+                        result = false;
+                    }
+                }
+            } else {
+                result = false;
+            }
+        }
+        return result;
+    }
+
+
+    private boolean isFilledRequiredFields(Doctor doctor) {
+        return doctor.getName() != null && doctor.getSurname() != null && doctor.getSpecialization() != null;
+    }
+
+    private void saveDoctor(Doctor doctor) {
+        try {
+            doctorRepository.save(doctor);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Nie udało się dodać lekarza");
         }
     }
 
-    private ResponseEntity<String> peselValidator(@RequestBody Doctor doctor, Matcher matcher) {
-        if (matcher.matches()) {
-            try {
-                doctorRepository.save(doctor);
-                return new ResponseEntity<>("Zapisano", HttpStatus.CREATED);
-            } catch (IllegalArgumentException e) {
-                return new ResponseEntity<>("Nie udało się dodać lekarza", HttpStatus.NOT_MODIFIED);
-            }
-        } else {
-            return new ResponseEntity<>("Nie zapisano, długość numeru pesel jest niepoprawna, bądź użyto niedozwolonych znaków lub liter", HttpStatus.NOT_ACCEPTABLE);
-        }
+    private boolean peselIsValid(String pesel) {
+        Pattern pattern = Pattern.compile("[0-9]{11}");
+        Matcher matcher = pattern.matcher(pesel);
+        return matcher.matches();
     }
+
 
     @GetMapping(path = "/doctors")
     public @ResponseBody
