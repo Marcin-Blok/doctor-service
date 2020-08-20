@@ -21,33 +21,46 @@ public class DoctorController {
 
     @PostMapping(path = "/doctors")
     public @ResponseBody
-    ResponseEntity<String> add(@RequestBody Doctor doctor) {
-        String pesel = doctor.getPesel();
-        if (isFilledRequiredFields(doctor)) {
-            if(pesel != null) {
-                if (peselIsValid(pesel)) {
-                    return saveDoctor(doctor);
-                } else {
-                    return new ResponseEntity<>("Nie zapisano, długość numeru pesel jest niepoprawna, bądź użyto niedozwolonych znaków lub liter", HttpStatus.NOT_ACCEPTABLE);
-                }
-            } else{
-                return saveDoctor(doctor);
+    ResponseEntity<String> add(@RequestBody List<Doctor> doctors) {
+        for (Doctor doctor : doctors){
+            if (doctorsListValidator(doctors)) {
+                saveDoctor(doctor);
+            } else {
+                return new ResponseEntity<>("Nie zapisano", HttpStatus.NOT_MODIFIED);
             }
-        } else {
-            return new ResponseEntity<>("Nie zapisano, następujące pola muszą zostać wypełnione: Imię, Nazwisko, Specjalizacja", HttpStatus.NOT_ACCEPTABLE);
         }
+        return new ResponseEntity<>("Zapisano", HttpStatus.CREATED);
     }
+
+    public boolean doctorsListValidator(List<Doctor> doctors) {
+        boolean result = true;
+        for (Doctor doctor : doctors) {
+            String pesel = doctor.getPesel();
+            if (isFilledRequiredFields(doctor)) {
+                if (pesel != null) {
+                    if (peselIsValid(pesel)) {
+                        result = true;
+                    } else {
+                        result = false;
+                    }
+                }
+            } else {
+                result = false;
+            }
+        }
+        return result;
+    }
+
 
     private boolean isFilledRequiredFields(Doctor doctor) {
         return doctor.getName() != null && doctor.getSurname() != null && doctor.getSpecialization() != null;
     }
 
-    private ResponseEntity<String> saveDoctor(Doctor doctor) {
+    private void saveDoctor(Doctor doctor) {
         try {
             doctorRepository.save(doctor);
-            return new ResponseEntity<>("Zapisano", HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>("Nie udało się dodać lekarza", HttpStatus.NOT_MODIFIED);
+            System.out.println("Nie udało się dodać lekarza");
         }
     }
 
