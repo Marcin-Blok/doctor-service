@@ -22,7 +22,7 @@ public class DoctorController {
     @PostMapping(path = "/doctors")
     public @ResponseBody
     ResponseEntity<String> add(@RequestBody List<Doctor> doctors) {
-        for (Doctor doctor : doctors){
+        for (Doctor doctor : doctors) {
             if (doctorsListValidator(doctors)) {
                 saveDoctor(doctor);
             } else {
@@ -32,23 +32,15 @@ public class DoctorController {
         return new ResponseEntity<>("Zapisano", HttpStatus.CREATED);
     }
 
+    //  Jeżeli pola wymagane nie został podane lub pesel niepoprawny to false
     public boolean doctorsListValidator(List<Doctor> doctors) {
-        boolean result = true;
         for (Doctor doctor : doctors) {
             String pesel = doctor.getPesel();
-            if (isFilledRequiredFields(doctor)) {
-                if (pesel != null) {
-                    if (peselIsValid(pesel)) {
-                        result = true;
-                    } else {
-                        result = false;
-                    }
-                }
-            } else {
-                result = false;
+            if (!isFilledRequiredFields(doctor) || !peselIsValid(pesel)) {
+                return false;
             }
         }
-        return result;
+        return true;
     }
 
 
@@ -65,6 +57,9 @@ public class DoctorController {
     }
 
     private boolean peselIsValid(String pesel) {
+        if (pesel == null) {
+            return false;
+        }
         Pattern pattern = Pattern.compile("[0-9]{11}");
         Matcher matcher = pattern.matcher(pesel);
         return matcher.matches();
