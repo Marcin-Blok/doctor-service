@@ -18,6 +18,8 @@ public class DoctorController {
 
     @Autowired
     private DoctorRepository doctorRepository;
+    @Autowired
+    private DayRepository dayRepository;
 
     @PostMapping(path = "/doctors")
     public @ResponseBody
@@ -50,7 +52,11 @@ public class DoctorController {
 
     private void saveDoctor(Doctor doctor) {
         try {
-            doctorRepository.save(doctor);
+            Doctor doctor2 = new Doctor("Adam", "Frontczak", "Chirurg", "74051624356");
+            doctorRepository.save(doctor2);
+            Day day = new Day(DayOfWeek.MONDAY);
+            day.setDoctor(doctor2);
+            dayRepository.save(day);
         } catch (IllegalArgumentException e) {
             System.out.println("Nie udało się dodać lekarza");
         }

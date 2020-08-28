@@ -32,4 +32,8 @@ public class Doctor {
         this.specialization = specialization;
         this.pesel = pesel;
     }
+    public void addDay(Day day ) {
+        day.setDoctor(this);
+        days.add(day);
+    }
 }
