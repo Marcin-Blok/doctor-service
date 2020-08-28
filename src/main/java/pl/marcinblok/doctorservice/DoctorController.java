@@ -28,7 +28,7 @@ public class DoctorController {
             if (doctorsListValidator(doctors)) {
                 saveDoctor(doctor);
             } else {
-                return new ResponseEntity<>("Nie zapisano", HttpStatus.NOT_MODIFIED);
+                return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
             }
         }
         return new ResponseEntity<>("Zapisano", HttpStatus.CREATED);
@@ -52,11 +52,12 @@ public class DoctorController {
 
     private void saveDoctor(Doctor doctor) {
         try {
-            Doctor doctor2 = new Doctor("Adam", "Frontczak", "Chirurg", "74051624356");
-            doctorRepository.save(doctor2);
-            Day day = new Day(DayOfWeek.MONDAY);
-            day.setDoctor(doctor2);
-            dayRepository.save(day);
+            doctorRepository.save(doctor);
+            for (Day day : doctor.getDays()
+            ) {
+                day.setDoctor(doctor);
+                dayRepository.save(day);
+            }
         } catch (IllegalArgumentException e) {
             System.out.println("Nie udało się dodać lekarza");
         }
@@ -64,7 +65,7 @@ public class DoctorController {
 
     private boolean peselIsValid(String pesel) {
         if (pesel == null) {
-            return false;
+            return true;
         }
         Pattern pattern = Pattern.compile("[0-9]{11}");
         Matcher matcher = pattern.matcher(pesel);
