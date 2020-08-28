@@ -53,8 +53,7 @@ public class DoctorController {
     private void saveDoctor(Doctor doctor) {
         try {
             doctorRepository.save(doctor);
-            for (Day day : doctor.getDays()
-            ) {
+            for (Day day : doctor.getDays()) {
                 day.setDoctor(doctor);
                 dayRepository.save(day);
             }
