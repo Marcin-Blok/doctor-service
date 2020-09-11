@@ -6,6 +6,7 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -17,19 +18,20 @@ public class Doctor {
     private int id;
     private String name;
     private String surname;
-    private String specialization;
     private String pesel;
 
-    @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "doctor", cascade = CascadeType.PERSIST, orphanRemoval = true)
     private List<Day> days = new ArrayList<>();
+    @ManyToMany(mappedBy = "doctors",  cascade = CascadeType.PERSIST)
+    private Set<Specialization> specializations;
+
 
     public Doctor() {
     }
 
-    public Doctor(String name, String surname, String specialization,String pesel){
+    public Doctor(String name, String surname,String pesel){
         this.name = name;
         this.surname = surname;
-        this.specialization = specialization;
         this.pesel = pesel;
     }
     public void addDay(Day day ) {

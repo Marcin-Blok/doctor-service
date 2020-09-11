@@ -47,7 +47,7 @@ public class DoctorController {
 
 
     private boolean isFilledRequiredFields(Doctor doctor) {
-        return doctor.getName() != null && doctor.getSurname() != null && doctor.getSpecialization() != null;
+        return doctor.getName() != null && doctor.getSurname() != null;
     }
 
     private void saveDoctor(Doctor doctor) {
@@ -81,6 +81,12 @@ public class DoctorController {
     @GetMapping("/doctors/{pesel}")
     public ResponseEntity<Doctor> getPatientByPesel(@PathVariable String pesel) {
         return new ResponseEntity<>(doctorRepository.getDoctorByPesel(pesel), HttpStatus.OK);
+    }
+
+    @GetMapping(path = "/doctors/{specialization}")
+    public @ResponseBody
+    ResponseEntity<List<Doctor>> getDoctorsBySpecialization(@PathVariable String specialization) {
+        return new ResponseEntity<>((List<Doctor>) doctorRepository.getDoctorBySpecializations(specialization), HttpStatus.OK);
     }
 
     @DeleteMapping(path = "/doctors/{id}")
