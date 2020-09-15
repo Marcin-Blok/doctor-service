@@ -5,6 +5,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -23,7 +24,7 @@ public class Doctor {
     @OneToMany(mappedBy = "doctor", cascade = CascadeType.PERSIST, orphanRemoval = true)
     private List<Day> days = new ArrayList<>();
     @ManyToMany(mappedBy = "doctors",  cascade = CascadeType.PERSIST)
-    private Set<Specialization> specializations;
+    private Set<Specialization> specializations = new HashSet<>();
 
 
     public Doctor() {

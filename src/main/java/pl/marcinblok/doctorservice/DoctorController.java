@@ -20,6 +20,8 @@ public class DoctorController {
     private DoctorRepository doctorRepository;
     @Autowired
     private DayRepository dayRepository;
+    @Autowired
+    private SpecializationRepository specializationRepository;
 
     @PostMapping(path = "/doctors")
     public @ResponseBody
@@ -52,11 +54,16 @@ public class DoctorController {
 
     private void saveDoctor(Doctor doctor) {
         try {
-            doctorRepository.save(doctor);
+            doctor = doctorRepository.save(doctor);
             for (Day day : doctor.getDays()) {
                 day.setDoctor(doctor);
                 dayRepository.save(day);
             }
+            for (Specialization specialization : doctor.getSpecializations()) {
+                specialization.getDoctors().add(doctor);
+                specializationRepository.save(specialization);
+            }
+
         } catch (IllegalArgumentException e) {
             System.out.println("Nie udało się dodać lekarza");
         }
