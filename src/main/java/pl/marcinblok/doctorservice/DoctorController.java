@@ -20,44 +20,46 @@ public class DoctorController {
     private DoctorRepository doctorRepository;
     @Autowired
     private DayRepository dayRepository;
+    @Autowired
+    private SpecializationRepository specializationRepository;
 
     @PostMapping(path = "/doctors")
     public @ResponseBody
-    ResponseEntity<String> add(@RequestBody List<Doctor> doctors) {
-        for (Doctor doctor : doctors) {
-            if (doctorsListValidator(doctors)) {
-                saveDoctor(doctor);
-            } else {
-                return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
-            }
+    ResponseEntity<String> add(@RequestBody Doctor doctor) {
+        if (doctorsListValidator(doctor)) {
+            saveDoctor(doctor);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
         }
         return new ResponseEntity<>("Zapisano", HttpStatus.CREATED);
     }
 
     //  Jeżeli pola wymagane nie został podane lub pesel niepoprawny to false
-    public boolean doctorsListValidator(List<Doctor> doctors) {
-        for (Doctor doctor : doctors) {
-            String pesel = doctor.getPesel();
-            if (!isFilledRequiredFields(doctor) || !peselIsValid(pesel)) {
-                return false;
-            }
+    public boolean doctorsListValidator(Doctor doctors) {
+        String pesel = doctors.getPesel();
+        if (!isFilledRequiredFields(doctors) || !peselIsValid(pesel)) {
+            return false;
         }
         return true;
     }
 
 
     private boolean isFilledRequiredFields(Doctor doctor) {
-        return doctor.getName() != null && doctor.getSurname() != null && doctor.getSpecialization() != null;
+        return doctor.getName() != null && doctor.getSurname() != null;
     }
 
     private void saveDoctor(Doctor doctor) {
         try {
-            doctorRepository.save(doctor);
-            for (Day day : doctor.getDays()
-            ) {
+            doctor = doctorRepository.save(doctor);
+            for (Day day : doctor.getDays()) {
                 day.setDoctor(doctor);
                 dayRepository.save(day);
             }
+            for (Specialization specialization : doctor.getSpecializations()) {
+                specialization.getDoctors().add(doctor);
+                specializationRepository.save(specialization);
+            }
+
         } catch (IllegalArgumentException e) {
             System.out.println("Nie udało się dodać lekarza");
         }
@@ -82,6 +84,12 @@ public class DoctorController {
     @GetMapping("/doctors/{pesel}")
     public ResponseEntity<Doctor> getPatientByPesel(@PathVariable String pesel) {
         return new ResponseEntity<>(doctorRepository.getDoctorByPesel(pesel), HttpStatus.OK);
+    }
+
+    @GetMapping(path = "/doctors/{specialization}")
+    public @ResponseBody
+    ResponseEntity<List<Doctor>> getDoctorsBySpecialization(@PathVariable String specialization) {
+        return new ResponseEntity<>((List<Doctor>) doctorRepository.getDoctorBySpecializations(specialization), HttpStatus.OK);
     }
 
     @DeleteMapping(path = "/doctors/{id}")

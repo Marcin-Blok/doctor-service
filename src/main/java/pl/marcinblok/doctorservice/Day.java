@@ -1,5 +1,7 @@
 package pl.marcinblok.doctorservice;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 
 @Entity
@@ -15,6 +17,7 @@ public class Day {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="doctor_id", nullable=true)
+    @JsonIgnore
     private Doctor doctor;
 
     public Day(){}
