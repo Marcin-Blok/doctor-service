@@ -25,24 +25,20 @@ public class DoctorController {
 
     @PostMapping(path = "/doctors")
     public @ResponseBody
-    ResponseEntity<String> add(@RequestBody List<Doctor> doctors) {
-        for (Doctor doctor : doctors) {
-            if (doctorsListValidator(doctors)) {
-                saveDoctor(doctor);
-            } else {
-                return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
-            }
+    ResponseEntity<String> add(@RequestBody Doctor doctor) {
+        if (doctorsListValidator(doctor)) {
+            saveDoctor(doctor);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
         }
         return new ResponseEntity<>("Zapisano", HttpStatus.CREATED);
     }
 
     //  Jeżeli pola wymagane nie został podane lub pesel niepoprawny to false
-    public boolean doctorsListValidator(List<Doctor> doctors) {
-        for (Doctor doctor : doctors) {
-            String pesel = doctor.getPesel();
-            if (!isFilledRequiredFields(doctor) || !peselIsValid(pesel)) {
-                return false;
-            }
+    public boolean doctorsListValidator(Doctor doctors) {
+        String pesel = doctors.getPesel();
+        if (!isFilledRequiredFields(doctors) || !peselIsValid(pesel)) {
+            return false;
         }
         return true;
     }

@@ -6,6 +6,5 @@ public interface DoctorRepository extends JpaRepository<Doctor, Integer> {
 
     Doctor getDoctorByPesel(String pesel);
 
-
     Object getDoctorBySpecializations(String specialization);
 }
